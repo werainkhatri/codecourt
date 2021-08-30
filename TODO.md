@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] show colored text instead of difficulty number in home screen
+- [x] show colored text instead of difficulty number in home screen
 - [ ] add user profile page
 - [ ] add user submissions of a particular problem page
     - [ ] create user submission model
