@@ -1,4 +1,3 @@
-from home.views import problems
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User, auth
@@ -47,7 +46,7 @@ def login(request):
         if user is not None:
             auth.login(request, user)
             messages.info(request, 'logged in')
-            return redirect('problems')
+            return redirect('home')
         else:
             messages.info(request, 'invalid credentials')
             return redirect('login_n')
@@ -57,4 +56,4 @@ def login(request):
 
 def logout(request):
     auth.logout(request)
-    return redirect('problems')
+    return redirect('home')
