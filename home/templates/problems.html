@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<h3 style="color: black ; margin-top: 3%;">Problem Set</h3>
+
+  {% for problem in problems %}
+  
+    <section class="media content-section " style="margin-top: 3%;">
+      <div class="media-body">
+        <a class="mr-2" href="{% url 'problem' problem.id %}" style="text-decoration: none;">{{ problem.id }}. {{  problem.name }}</a>
+        <p class="article-content" style="float: right;">{{ problem.difficulty }}</p>
+      </div>
+    </section>
+
+  {% endfor %}
+
+{% endblock content %}
+  
+     
+     
+   

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container-lg" style="margin: 1% 0 0 -3%; width: 120%;" >
+    
+    <div class="sticky-md-top"><h2>{{ problem.id }}. {{ problem.name }}</h2></div>
+           
+    <hr>
+    
+    <div>
+        {{ problem.statement }}
+    </div>
+
+    <br>
+
+    <div>
+      <h6><b>Input:</b></h6>
+      {{ problem.input }}
+      <br><br>
+      <h6><b>Output:</b></h6>
+      {{ problem.output }}
+    </div>
+
+    <hr>
+
+    <div>
+      <h6><b>Examples:</b></h6>
+      {% for sample in samples %}
+        <div>
+          <b>input</b>
+          <pre style='margin-bottom: 0;'>{{ sample.input }}</pre>
+          <b>output</b>
+          <pre>{{ sample.output }}</pre>
+        </div>
+      {% endfor %}
+    </div>
+
+    <hr>
+
+    <form action = "{% url 'problem' problem.id %}" method = "POST" style="margin: 7% 0 4% 0; ">
+        {% csrf_token %} 
+      <fieldset >
+        
+          <div class="mb-3">
+          <label for="user_solution" class="form-label"><h6>Submit code:</h6></label>
+          <textarea class="form-control" name="user_solution"  id="user_solution" rows="10"></textarea>
+           </div>
+        <div class="mb-3">
+          <label for="language" class="form-label"><h6>Select language</h6></label>
+          <select id="language" name="language" class="form-select" >
+            <option>C++</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </fieldset>
+    </form>
+   
+ </div>
+
+
+{% endblock content %}
+  
+     
+     
+   
