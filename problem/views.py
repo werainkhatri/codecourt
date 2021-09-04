@@ -13,4 +13,4 @@ def problem(request, prob_id):
         # 'samples': problem.sampletestcase_set.all(),
     }
     # if request.method == 'POST':
-    return render(request, 'problem_page.html', context)
+    return render(request, 'problem.html', context)

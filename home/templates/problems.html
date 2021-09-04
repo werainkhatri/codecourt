@@ -1,25 +1,26 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block content %}
 
 <h3 style="color: black; margin-top: 3%;">Problem Set</h3>
 
-  {% for problem in problems %}
-  
-    <section class="media content-section" style="margin: 0;">
-      <div class="media-body">
-        <a class="mr-2" href="{% url 'problem' problem.id %}" style="text-decoration: none;">{{ problem.id }}. {{  problem.name }}</a>
-        {% if problem.difficulty == 0 %}
-          <p class="article-content" style="float: right; color: green">EASY</p>
-        {% elif problem.difficulty is 1 %}
-          <p class="article-content" style="float: right; color: yellowgreen">MEDIUM</p>
-        {% elif problem.difficulty is 2 %}
-          <p class="article-content" style="float: right; color: red">HARD</p>
-        {% endif %}
-      </div>
-    </section>
+{% for problem in problems %}
 
-  {% endfor %}
+  <section class="media content-section" style="margin: 0;">
+    <div class="media-body">
+      <a class="mr-2" href="{% url 'problem' problem.id %}" style="text-decoration: none;">{{ problem.id }}. {{  problem.name }}</a>
+      {% if problem.difficulty == 0 %}
+        <p class="article-content" style="float: right; color: green">EASY</p>
+      {% elif problem.difficulty is 1 %}
+        <p class="article-content" style="float: right; color: yellowgreen">MEDIUM</p>
+      {% elif problem.difficulty is 2 %}
+        <p class="article-content" style="float: right; color: red">HARD</p>
+      {% endif %}
+    </div>
+  </section>
+
+{% endfor %}
 
 {% endblock content %}
   

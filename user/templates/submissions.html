@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<h3 style="color: black; margin-top: 3%;">Submissions</h3>
+
+<section class="media content-section" style="margin: 0;">
+  <table style="table-layout: auto; width: 100%;">
+
+    <tr>
+      <th>#</th>
+      <th>when</th>
+      <th>problem</th>
+      <th>lang</th>
+      <th>verdict</th>
+      <th>time</th>
+      <th>memory</th>
+    </tr>
+
+    {% for sub in submissions reversed %}
+
+      <tr>
+        <td>{{ sub.id }}</td>
+        <td>
+          {% with date=sub.datetime %}
+          <a href="https://www.timeanddate.com/worldclock/fixedtime.html?day={{date.day}}&month={{date.month}}&year={{date.year}}&hour={{date.hour}}&min={{date.minute}}&sec={{date.second}}">
+            {{ sub.datetime|date:'Y-m-d H:i:s' }}
+          </a>
+          {% endwith %}
+        </td>
+        <td><a class="mr-2" href="{% url 'problem' sub.problem.id %}" style="text-decoration: none;">{{ sub.problem.id }}. {{  sub.problem.name }}</a></td>
+        <td>{{ sub.lang }}</td>
+        <td>
+          {% if sub.verdict == 'AC' %}
+            <p style="color: green; margin: 0;">accepted</p>
+          {% elif sub.verdict == 'TT' %}
+            <p style="color: grey; margin: 0;">testing</p>
+          {% else %}
+            <p style="color: blue; margin: 0;">
+              {% if sub.verdict == 'WA' %}
+                wrong answer
+              {% elif sub.verdict == 'TE' %}
+                time limit exceeded
+              {% elif sub.verdict == 'CE' %}
+                compile error
+              {% elif sub.verdict == 'RE' %}
+                runtime error
+              {% endif %}
+            </p>
+          {% endif %}
+        </td>
+        <td>{{ sub.time }} ms</td>
+        <td>{{ sub.memory }} KB</td>
+      </tr>
+
+    {% endfor %}
+
+  </table>
+</section>
+
+{% endblock content %}

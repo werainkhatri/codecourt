@@ -9,3 +9,5 @@
 - [ ] Add favicon
 - [ ] Add limit on username length
 - [ ] Add a good messaging service, like in codeforces
+- [ ] Add popup to view code when clicked on submission id
+- [ ] Redirect - submissions -> login -> on success should take back to submissions (?next)

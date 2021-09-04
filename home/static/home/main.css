@@ -104,3 +104,12 @@ a.article-title:hover {
     height: 100%;
   }
 }
+
+table, td, th {
+  border: 1px solid black;
+  text-align: center;
+}
+
+th {
+  background-color: lightgray;
+}

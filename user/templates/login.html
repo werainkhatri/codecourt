@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<form action="/auth/login/" method="POST">
+<form action="/user/login/" method="POST">
   {% csrf_token %}
 
   <section class="vh-100">
@@ -25,7 +25,7 @@
             <div class="d-flex flex-row align-items-center">
               <i class="fas fa-lock fa-lg me-3 fa-fw iconstyle"></i>
               <div class="form-outline flex-fill mb-3">
-                <input type="password" id="form3Example4" name="password1" class="form-control" placeholder="password" />
+                <input type="password" id="form3Example4" name="password" class="form-control" placeholder="password" />
               </div>
             </div>
 

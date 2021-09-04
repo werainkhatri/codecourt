@@ -1,19 +1,20 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User, auth
+from django.contrib.auth.decorators import login_required
+from user.models import Submission
 
 
 def register(request):
     if request.method == 'POST':
-        name = request.POST['username']
+        username = request.POST['username']
         email = request.POST['email']
         password1 = request.POST['password1']
         password2 = request.POST['password2']
 
-        # Done
         if password1 == password2:
 
-            if User.objects.filter(username=name).exists():
+            if User.objects.filter(username=username).exists():
                 messages.info(request, 'Username already taken')
                 return redirect('register_n')
 
@@ -23,13 +24,13 @@ def register(request):
 
             else:
                 user = User.objects.create_user(
-                    username=name, email=email, password=password1)
+                    username=username, email=email, password=password1)
                 user.save()
-                messages.success(request, f'Account Created for {name} !')
+                messages.success(request, f'Account Created for {username}!')
                 return redirect('login_n')
 
         else:
-            messages.info(request, 'Password not matching')
+            messages.info(request, 'passwords don\'t matching')
             return redirect('register_n')
 
     else:
@@ -57,3 +58,12 @@ def login(request):
 def logout(request):
     auth.logout(request)
     return redirect('home')
+
+
+@login_required(login_url='login_n')
+def submissions(request):
+    if request.method == 'POST':
+        pass
+
+    submissions = Submission.objects.all()
+    return render(request, 'submissions.html', {'title': 'OJ-submissions', 'submissions': submissions[:10]})
