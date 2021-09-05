@@ -15,7 +15,6 @@
       <th>lang</th>
       <th>verdict</th>
       <th>time</th>
-      <th>memory</th>
     </tr>
 
     {% for sub in submissions reversed %}
@@ -51,7 +50,6 @@
           {% endif %}
         </td>
         <td>{{ sub.time }} ms</td>
-        <td>{{ sub.memory }} KB</td>
       </tr>
 
     {% endfor %}

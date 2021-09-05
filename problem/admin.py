@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Problem, SampleTestCase, HiddenTestCase
+
+from .models import Problem, TestCase
 
 admin.site.register(Problem)
-admin.site.register(SampleTestCase)
-admin.site.register(HiddenTestCase)
+admin.site.register(TestCase)

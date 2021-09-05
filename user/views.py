@@ -66,4 +66,4 @@ def submissions(request):
         pass
 
     submissions = Submission.objects.all()
-    return render(request, 'submissions.html', {'title': 'OJ-submissions', 'submissions': submissions[:10]})
+    return render(request, 'submissions.html', {'title': 'OJ-submissions', 'submissions': submissions[:100]})

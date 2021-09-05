@@ -16,19 +16,20 @@ class Submission(models.Model):
     )
 
     LANGUAGE_CHOICES = (
-        (0, 'C++'),
-        (1, 'Java'),
-        (2, 'Python')
+        ('GNU G++ 9.3.0', 'g++'),
+        ('GNU GCC 9.3.0', 'gcc'),
+        ('Python 3.8.10', 'python')
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     code = models.TextField()
     datetime = models.DateTimeField(auto_now_add=True)
-    lang = models.IntegerField(choices=LANGUAGE_CHOICES, default=1)
-    verdict = models.CharField(max_length=2, choices=VERDICT_CHOICES)
-    time = models.IntegerField()
-    memory = models.IntegerField()
+    lang = models.CharField(max_length=30, choices=LANGUAGE_CHOICES, default=1)
+    verdict = models.CharField(
+        max_length=2, choices=VERDICT_CHOICES, default='TT')
+    time = models.IntegerField(default=0)
+    memory = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.id)
