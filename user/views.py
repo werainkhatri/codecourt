@@ -34,7 +34,7 @@ def register(request):
             return redirect('register_n')
 
     else:
-        return render(request, 'register.html', {'title': 'OJ-register'})
+        return render(request, 'register.html', {'title': 'Register - CodeCourt'})
 
 
 def login(request):
@@ -52,7 +52,7 @@ def login(request):
             messages.info(request, 'invalid credentials')
             return redirect('login_n')
     else:
-        return render(request, 'login.html', {'title': 'OJ-login'})
+        return render(request, 'login.html', {'title': 'Login - CodeCourt'})
 
 
 def logout(request):
@@ -66,4 +66,4 @@ def submissions(request):
         pass
 
     submissions = Submission.objects.all()
-    return render(request, 'submissions.html', {'title': 'OJ-submissions', 'submissions': submissions[:100]})
+    return render(request, 'submissions.html', {'title': 'Submissions - CodeCourt', 'submissions': submissions[:100]})

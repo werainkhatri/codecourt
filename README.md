@@ -1,4 +1,4 @@
-# OnlineJudge
+# CodeCourt
 
 ## Getting Started
 
