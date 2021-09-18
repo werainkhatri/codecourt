@@ -40,11 +40,11 @@
 
       <div class="mb-3" style="width: 40%;">
         <label for="language" class="form-label">
-          <h6>Language:</h6>
+          <h6>Judges:</h6>
         </label>
         <select id="language" name="language" class="form-select" style="background-color: lightgrey;">
-          {% for lang in langs %}
-            <option>{{ lang.0 }}</option>
+          {% for judge in judges %}
+            <option>{{ judge.0 }}</option>
           {% endfor %}
         </select>
       </div>

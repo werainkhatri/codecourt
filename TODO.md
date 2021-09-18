@@ -20,3 +20,4 @@ Future
 - [ ] Way to add more languages
 - [ ] currently, if the tester encounters anything except AC, it stops and doesnt check the others. Maybe do something like atcoder which checks all testcases every time
 - [ ] interactive problems
+- [ ] prevent users from submitting same code again

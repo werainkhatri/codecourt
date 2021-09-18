@@ -12,7 +12,7 @@
       <th>#</th>
       <th>when</th>
       <th>problem</th>
-      <th>lang</th>
+      <th>judge</th>
       <th>verdict</th>
       <th>time</th>
     </tr>
@@ -29,7 +29,7 @@
           {% endwith %}
         </td>
         <td><a class="mr-2" href="{% url 'problem' sub.problem.id %}" style="text-decoration: none;">{{ sub.problem.id }}. {{  sub.problem.name }}</a></td>
-        <td>{{ sub.lang }}</td>
+        <td>{{ sub.judge }}</td>
         <td>
           {% if sub.verdict == 'AC' %}
             <p style="color: green; margin: 0;">accepted</p>
