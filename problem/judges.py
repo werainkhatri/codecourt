@@ -1,25 +1,41 @@
+import os, tarfile
 import subprocess as sp
 from time import time
+import docker
 
 from user.models import Submission
+from . import constants as _
 
-from problem.models import Problem
-
-CODES_DIR = 'session/'
-
+__client = docker.from_env()
 
 def judge_gcc(submission: Submission):
     '''
     Tests submission against the gcc judge
     '''
-    return __judge_gxx(submission, 'gcc', 'c')
+    filename = str(submission.id)
+
+    return __chief_judge(
+        submission=submission,
+        ext=_.C,
+        compile='gcc -o {} {}.c'.format(filename, filename),
+        run='./{}'.format(filename),
+        clear='rm {} {}.c'.format(filename, filename)
+    )
 
 
 def judge_gpp(submission: Submission):
     '''
     Tests submission against the gpp judge
     '''
-    return __judge_gxx(submission, 'g++', 'cpp')
+    filename = str(submission.id)
+
+    return __chief_judge(
+        submission=submission,
+        ext=_.CPP,
+        compile='g++ -o {} {}.cpp'.format(filename, filename),
+        run='./{}'.format(filename),
+        clear='rm {} {}.cpp'.format(filename, filename)
+    )
 
 
 def judge_python(submission: Submission):
@@ -28,81 +44,87 @@ def judge_python(submission: Submission):
     '''
     filename = str(submission.id)
 
-    file = open(CODES_DIR + filename + '.py', 'xt')
+    return __chief_judge(
+        submission=submission,
+        ext=_.PY,
+        run='python {}.py'.format(filename),
+        clear='rm {}.py'.format(filename)
+    )
+
+
+
+def __chief_judge(submission, ext, clear, run, compile=None):
+    filename = str(submission.id) + '.' + ext
+    hostfile = _.CODES_DIR + filename
+
+    file = open(hostfile, 'xt')
     file.write(submission.code)
     file.close()
-
-    def delete_file():
-        sp.run(['rm', '{}{}.py'.format(CODES_DIR, filename)])
     
+    container: docker.models.containers.Container = None
+    try:
+        container = __client.containers.get(_.CONTAINER_NAME[ext])
+    except docker.errors.NotFound:
+        container = __client.containers.run(_.DOCKER_IMAGE[ext],
+            stdin_open=True, 
+            detach=True, 
+            tty=True,
+            name=_.CONTAINER_NAME[ext])
+    
+    __copy_to(hostfile, filename, container)
+
     maxtime = 0.0
+    verdict = 'AC'
+
+    def close():
+        sp.run(['rm', filename])
+        sp.run(['rm', filename+'.tar'])
+        # sp.run('docker exec ' + _.CONTAINER_NAME[ext] + ' ' + clear, shell=True)
+        return {'verdict': verdict, 'time': maxtime}
+
+    if compile:
+        cp = sp.run('docker exec ' +  _.CONTAINER_NAME[ext] + ' ' + compile, shell=True)
+        if cp.returncode != 0:
+            verdict = 'CE'
+            return close()
+
+    
     for tc in submission.problem.testcase_set.all():
         start = time()
+
         try:
-            cp = sp.run(['python', '{}{}.py'.format(CODES_DIR, filename)],
-                            input=tc.input.encode(),
-                            capture_output=True,
-                            timeout=submission.problem.time_limit)
+            cp = sp.run('docker exec ' + _.CONTAINER_NAME[ext] + ' sh -c \'echo "{}" | {}\''.format(tc.input, run),
+                    shell=True,
+                    capture_output=True,
+                    timeout=submission.problem.time_limit / 1000)
         except sp.TimeoutExpired:
-            delete_file()
-            return {'verdict': 'TE', 'time': (time() - start) * 1000}
+            maxtime = (time() - start) * 1000
+            verdict = 'TE'
+            break
         
         maxtime = max(maxtime, (time() - start) * 1000)
 
         if cp.returncode != 0:
-            delete_file()
             print(cp.stderr.decode())
-            return {'verdict': 'RE', 'time': maxtime}
+            verdict = 'RE'
+            break
 
         useroutput = cp.stdout.decode().strip().rstrip("\n").strip()
         if not useroutput == tc.output:
-            delete_file()
-            return {'verdict': 'WA', 'time': maxtime}
+            verdict = 'WA'
+            break
     
-    delete_file()
-    return {'verdict': 'AC', 'time': maxtime}
+    return close()
 
-
-def __judge_gxx(submission: Submission, compiler, ext):
-    filename = str(submission.id)
-
-    file = open(CODES_DIR + filename + '.{}'.format(ext), 'xt')
-    file.write(submission.code)
-    file.close()
-
-    # Compile
-    cp = sp.run([compiler, '-o', CODES_DIR + filename, '{}{}.{}'.format(CODES_DIR, filename, ext)])
-    # Delete code file
-    sp.run(['rm', '{}{}.{}'.format(CODES_DIR, filename, ext)])
-
-    def delete_file():
-        sp.run(['rm', '{}{}'.format(CODES_DIR, filename)])
-    
-    if(cp.returncode != 0):
-        return {'verdict': 'CE', 'time': 0}
-
-    maxtime = 0.0
-    for tc in submission.problem.testcase_set.all():
-        start = time()
-        try:
-            cp = sp.run('./{}{}'.format(CODES_DIR, filename),
-                            input=tc.input.encode(),
-                            capture_output=True,
-                            timeout=submission.problem.time_limit)
-        except sp.TimeoutExpired:
-            delete_file()
-            return {'verdict': 'TE', 'time': (time() - start) * 1000}
-        
-        maxtime = max(maxtime, (time() - start) * 1000)
-
-        if cp.returncode != 0:
-            delete_file()
-            return {'verdict': 'RE', 'time': maxtime}
-
-        useroutput = cp.stdout.decode().strip().rstrip("\n").strip()
-        if not useroutput == tc.output:
-            delete_file()
-            return {'verdict': 'WA', 'time': maxtime}
-    
-    delete_file()
-    return {'verdict': 'AC', 'time': maxtime}
+def __copy_to(src, dst, container):
+    src = '/home/werain/dev/dj/CodeCourt/' + src
+    dst = '/' + dst
+    os.chdir(os.path.dirname(src))
+    srcname = os.path.basename(src)
+    tar = tarfile.open(src + '.tar', mode='w')
+    try:
+        tar.add(srcname)
+    finally:
+        tar.close()
+    data = open(src + '.tar', 'rb').read()
+    container.put_archive(os.path.dirname(dst), data)

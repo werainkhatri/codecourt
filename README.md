@@ -6,6 +6,8 @@ Currently supports c11, c++14, c++17, c++20, python 2 and python 3, with more to
 
 ## Getting Started
 
+1. Make sure you have [python](https://www.python.org) and [docker](https://docs.docker.com/get-docker/) installed on your machine.
+
 1. Setup and start virtual environment. If you don't have `python3`, replace with `python`.
 
 ```bash
