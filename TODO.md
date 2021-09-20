@@ -10,6 +10,7 @@
 - [ ] Add limit on username length
 - [ ] Add popup to view code when clicked on submission id
 - [ ] Redirect - submissions -> login -> on success should take back to submissions (?next)
+- [ ] Save user preference of compiler
 
 Future
 - [ ] Get memory used and set memory limit, with memory exceeded error

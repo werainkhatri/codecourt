@@ -1,13 +1,10 @@
-from problem.models import Problem
 from django.contrib.auth.models import User
 from django.db import models
-from datetime import datetime as dt
+from problem.constants import Judge
+from problem.models import Problem
+
 
 class Submission(models.Model):
-
-    JUDGEGCC = 'GNU GCC 9.3.0'
-    JUDGEGPP = 'GNU G++ 9.3.0'
-    JUDGEPYTHON = 'Python 3.8.0'
 
     VERDICT_CHOICES = (
         ('AC', 'accepted'),
@@ -19,9 +16,14 @@ class Submission(models.Model):
     )
 
     JUDGE_CHOICES = (
-        (JUDGEGPP, 'g++'),
-        (JUDGEGCC, 'gcc'),
-        (JUDGEPYTHON, 'python')
+        (1, Judge.PY2),
+        (2, Judge.PY3),
+        (3, Judge.GCC),
+        (4, Judge.GPP14),
+        (5, Judge.GPP17),
+        (6, Judge.GPP20),
+        # (7, Judge.JAVA8),
+        # (8, Judge.JAVA11),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)

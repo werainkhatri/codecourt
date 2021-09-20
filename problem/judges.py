@@ -1,75 +1,87 @@
-import os, tarfile
+import os
 import subprocess as sp
+import tarfile
 from time import time
-import docker
 
+import docker
+from docker.models.containers import Container
 from user.models import Submission
+
 from . import constants as _
 
 __client = docker.from_env()
 
 def judge_gcc(submission: Submission):
     '''
-    Tests submission against the gcc judge
+    Tests `submission` against the gcc judge
     '''
     filename = str(submission.id)
 
     return __chief_judge(
         submission=submission,
-        ext=_.C,
+        ext='c',
         compile='gcc -o {} {}.c'.format(filename, filename),
         run='./{}'.format(filename),
-        clear='rm {} {}.c'.format(filename, filename)
+        clear='rm {} {}.c'.format(filename, filename),
+        cont_name=_.Judge.GCCCONT,
+        docker_image=_.Judge.GCCIMG,
     )
 
 
-def judge_gpp(submission: Submission):
+def judge_gpp(submission: Submission, std: str):
     '''
-    Tests submission against the gpp judge
+    Tests `submission` against the g++ judge,
+    and `std` standard
     '''
     filename = str(submission.id)
 
     return __chief_judge(
         submission=submission,
-        ext=_.CPP,
-        compile='g++ -o {} {}.cpp'.format(filename, filename),
+        ext="cpp",
+        compile='g++ -std=c++{} -o {} {}.cpp'.format(std, filename, filename),
         run='./{}'.format(filename),
-        clear='rm {} {}.cpp'.format(filename, filename)
+        clear='rm {} {}.cpp'.format(filename, filename),
+        cont_name=_.Judge.GCCCONT,
+        docker_image=_.Judge.GCCIMG,
     )
 
 
-def judge_python(submission: Submission):
+def judge_python(submission: Submission, is3: bool):
     '''
-    Tests submission against the python judge
+    Tests `submission` against the python judge.
+    if `is3`, it will be against python 3, else python 2
     '''
     filename = str(submission.id)
 
     return __chief_judge(
         submission=submission,
-        ext=_.PY,
+        ext='py',
         run='python {}.py'.format(filename),
-        clear='rm {}.py'.format(filename)
+        clear='rm {}.py'.format(filename),
+        cont_name=_.Judge.PY3CON if is3 else _.Judge.PY2CON,
+        docker_image=_.Judge.PY3IMG if is3 else _.Judge.PY2IMG,
     )
 
 
-
-def __chief_judge(submission, ext, clear, run, compile=None):
+def __chief_judge(submission, ext, clear, run, cont_name, docker_image, compile=None):
     filename = str(submission.id) + '.' + ext
     hostfile = _.CODES_DIR + filename
 
-    file = open(hostfile, 'xt')
+    file = open(_.HOST_PATH + hostfile, 'xt')
     file.write(submission.code)
     file.close()
     
     container: docker.models.containers.Container = None
     try:
-        container = __client.containers.get(_.CONTAINER_NAME[ext])
+        container: Container = __client.containers.get(cont_name)
+        if(container.status != 'running'):
+            container.start()
     except docker.errors.NotFound:
-        container = __client.containers.run(_.DOCKER_IMAGE[ext],
+        container = __client.containers.run(docker_image,
             stdin_open=True, 
             detach=True, 
             tty=True,
-            name=_.CONTAINER_NAME[ext])
+            name=cont_name)
     
     __copy_to(hostfile, filename, container)
 
@@ -79,11 +91,11 @@ def __chief_judge(submission, ext, clear, run, compile=None):
     def close():
         sp.run(['rm', filename])
         sp.run(['rm', filename+'.tar'])
-        # sp.run('docker exec ' + _.CONTAINER_NAME[ext] + ' ' + clear, shell=True)
+        sp.run('docker exec ' + cont_name + ' ' + clear, shell=True)
         return {'verdict': verdict, 'time': maxtime}
 
     if compile:
-        cp = sp.run('docker exec ' +  _.CONTAINER_NAME[ext] + ' ' + compile, shell=True)
+        cp = sp.run('docker exec ' +  cont_name + ' ' + compile, shell=True)
         if cp.returncode != 0:
             verdict = 'CE'
             return close()
@@ -93,7 +105,7 @@ def __chief_judge(submission, ext, clear, run, compile=None):
         start = time()
 
         try:
-            cp = sp.run('docker exec ' + _.CONTAINER_NAME[ext] + ' sh -c \'echo "{}" | {}\''.format(tc.input, run),
+            cp = sp.run('docker exec ' + cont_name + ' sh -c \'echo "{}" | {}\''.format(tc.input, run),
                     shell=True,
                     capture_output=True,
                     timeout=submission.problem.time_limit / 1000)
@@ -117,8 +129,8 @@ def __chief_judge(submission, ext, clear, run, compile=None):
     return close()
 
 def __copy_to(src, dst, container):
-    src = '/home/werain/dev/dj/CodeCourt/' + src
-    dst = '/' + dst
+    src = _.HOST_PATH + src
+    dst = _.CONT_PATH + dst
     os.chdir(os.path.dirname(src))
     srcname = os.path.basename(src)
     tar = tarfile.open(src + '.tar', mode='w')

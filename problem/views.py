@@ -1,30 +1,13 @@
-from django.shortcuts import redirect, render
-from django.contrib.auth.decorators import login_required
-import subprocess as sb
 from multiprocessing import Process
-from time import time
 
-from .models import Problem, TestCase
-from .judges import judge_gcc, judge_gpp, judge_python
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
 from user.models import Submission
 
-COMPILER_DICT = dict((x, y) for x, y in Submission.JUDGE_CHOICES)
+from problem.constants import Judge
 
-EXTENTION_DICT = {
-    'g++': 'cpp',
-    'gcc': 'c',
-    'python': 'py',
-}
-
-# If the language associated with input extention
-# is compiled (True) or interpreted (False)
-IS_COMPILED = {
-    'cpp': True,
-    'c': True,
-    'py': False,
-}
-
-FILE_NAME = 'in'
+from .judges import judge_gcc, judge_gpp, judge_python
+from .models import Problem, TestCase
 
 
 @login_required(login_url='login_n')
@@ -49,15 +32,21 @@ def problem(request, prob_id):
     return render(request, 'problem.html', context)
 
 
-def run_testcases(submission: Submission):
-    if submission.judge == Submission.JUDGEGCC:
-        output = judge_gcc(submission)
-    elif submission.judge == Submission.JUDGEGPP:
-        output = judge_gpp(submission)
-    elif submission.judge == Submission.JUDGEPYTHON:
-        output = judge_python(submission)
+def run_testcases(sub: Submission):
+    if sub.judge == Judge.PY2:
+        output = judge_python(sub, False)
+    elif sub.judge == Judge.PY3:
+        output = judge_python(sub, True)
+    elif sub.judge == Judge.GCC:
+        output = judge_gcc(sub)
+    elif sub.judge == Judge.GPP14:
+        output = judge_gpp(sub, 14)
+    elif sub.judge == Judge.GPP17:
+        output = judge_gpp(sub, 17)
+    elif sub.judge == Judge.GPP20:
+        output = judge_gpp(sub, 20)
 
-    submission.verdict = output['verdict']
-    submission.time = output['time']
+    sub.verdict = output['verdict']
+    sub.time = output['time']
     # TODO find a way to calculate memory
-    submission.save()
+    sub.save()
