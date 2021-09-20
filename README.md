@@ -1,5 +1,9 @@
 # CodeCourt
 
+Code submission and evaluation plaform using docker for execution and security. It's a court for code, constituting judges of different languages, conducting sessions in their own container.
+
+Currently supports c11, c++14, c++17, c++20, python 2 and python 3, with more to come.
+
 ## Getting Started
 
 1. Setup and start virtual environment. If you don't have `python3`, replace with `python`.
