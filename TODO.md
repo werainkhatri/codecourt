@@ -10,7 +10,7 @@
 - [ ] Add limit on username length
 - [ ] Add popup to view code when clicked on submission id
 - [ ] Redirect - submissions -> login -> on success should take back to submissions (?next)
-- [ ] Find a better way to solve critical section for code and out files, so that two submissions don't interfere with each other
+- [ ] Save user preference of compiler
 
 Future
 - [ ] Get memory used and set memory limit, with memory exceeded error
