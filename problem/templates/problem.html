@@ -8,10 +8,11 @@
     <h2>{{ problem.id }}. {{ problem.name }}</h2>
   </div>
   <hr>
+  
+  {% autoescape off %}
+
   <div>{{ problem.statement }}</div>
-
   <br>
-
   <div>
     <h6><b>Input:</b></h6>
     {{ problem.input }}
@@ -19,6 +20,8 @@
     <h6><b>Output:</b></h6>
     {{ problem.output }}
   </div>
+
+  {% endautoescape %}
 
   <hr>
 
@@ -61,6 +64,5 @@
   </form>
 
 </div>
-
 
 {% endblock content %}
