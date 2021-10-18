@@ -67,7 +67,7 @@ def __chief_judge(submission, ext, clear, run, cont_name, docker_image, compile=
     filename = str(submission.id) + '.' + ext
     hostfile = _.CODES_DIR + filename
 
-    file = open(_.HOST_PATH + hostfile, 'xt')
+    file = open(_.HOST_PATH + hostfile, 'w+')
     file.write(submission.code)
     file.close()
     
@@ -83,14 +83,13 @@ def __chief_judge(submission, ext, clear, run, cont_name, docker_image, compile=
             tty=True,
             name=cont_name)
     
-    __copy_to(hostfile, filename, container)
+    __copy_to_container(hostfile, filename, container)
 
     maxtime = 0.0
     verdict = 'AC'
 
     def close():
-        sp.run(['rm', filename])
-        sp.run(['rm', filename+'.tar'])
+        sp.run(['rm', hostfile])
         sp.run('docker exec ' + cont_name + ' ' + clear, shell=True)
         return {'verdict': verdict, 'time': maxtime}
 
@@ -128,15 +127,7 @@ def __chief_judge(submission, ext, clear, run, cont_name, docker_image, compile=
     
     return close()
 
-def __copy_to(src, dst, container):
+def __copy_to_container(src, dst, container):
     src = _.HOST_PATH + src
     dst = _.CONT_PATH + dst
-    os.chdir(os.path.dirname(src))
-    srcname = os.path.basename(src)
-    tar = tarfile.open(src + '.tar', mode='w')
-    try:
-        tar.add(srcname)
-    finally:
-        tar.close()
-    data = open(src + '.tar', 'rb').read()
-    container.put_archive(os.path.dirname(dst), data)
+    sp.run(['docker', 'cp', src, container.id+':'+dst])

@@ -1,12 +1,11 @@
+from codecourt.settings import BASE_DIR
+
 # FILES AND DIRECTORIES
 CODES_DIR = 'session/'
 # project path in host file system
-HOST_PATH = '/home/werain/dev/dj/CodeCourt/'
+HOST_PATH = str(BASE_DIR) + '/'
 # container path where all code files reside
-CONT_PATH = '/court/'
-
-# SEPARATORS
-INPUT_SEP = 'INPUT'
+CONT_PATH = '/'
 
 
 class Judge:
