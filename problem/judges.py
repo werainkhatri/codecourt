@@ -11,7 +11,7 @@ from . import constants as _
 
 __client = docker.from_env()
 
-def judge_gcc(submission: Submission):
+def judge_gcc(submission: Submission, testcases):
     '''
     Tests `submission` against the gcc judge
     '''
@@ -19,6 +19,7 @@ def judge_gcc(submission: Submission):
 
     return __chief_judge(
         submission=submission,
+        testcases=testcases,
         ext='c',
         compile='gcc -o {} {}.c'.format(filename, filename),
         run='./{}'.format(filename),
@@ -28,7 +29,7 @@ def judge_gcc(submission: Submission):
     )
 
 
-def judge_gpp(submission: Submission, std: str):
+def judge_gpp(submission: Submission, testcases, std: str):
     '''
     Tests `submission` against the g++ judge,
     and `std` standard
@@ -37,6 +38,7 @@ def judge_gpp(submission: Submission, std: str):
 
     return __chief_judge(
         submission=submission,
+        testcases=testcases,
         ext="cpp",
         compile='g++ -std=c++{} -o {} {}.cpp'.format(std, filename, filename),
         run='./{}'.format(filename),
@@ -46,7 +48,7 @@ def judge_gpp(submission: Submission, std: str):
     )
 
 
-def judge_python(submission: Submission, is3: bool):
+def judge_python(submission: Submission, testcases, is3: bool):
     '''
     Tests `submission` against the python judge.
     if `is3`, it will be against python 3, else python 2
@@ -55,6 +57,7 @@ def judge_python(submission: Submission, is3: bool):
 
     return __chief_judge(
         submission=submission,
+        testcases=testcases,
         ext='py',
         run='python {}.py'.format(filename),
         clear='rm {}.py'.format(filename),
@@ -63,7 +66,7 @@ def judge_python(submission: Submission, is3: bool):
     )
 
 
-def __chief_judge(submission, ext, clear, run, cont_name, docker_image, compile=None):
+def __chief_judge(submission, testcases, ext, clear, run, cont_name, docker_image, compile=None):
     filename = str(submission.id) + '.' + ext
     hostfile = _.CODES_DIR + filename
 
@@ -100,7 +103,7 @@ def __chief_judge(submission, ext, clear, run, cont_name, docker_image, compile=
             return close()
 
     
-    for tc in submission.problem.testcase_set.all():
+    for tc in testcases:
         start = time()
 
         try:

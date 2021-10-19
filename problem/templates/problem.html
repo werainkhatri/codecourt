@@ -47,7 +47,7 @@
         </label>
         <select id="language" name="language" class="form-select" style="background-color: lightgrey;">
           {% for judge in judges %}
-            <option>{{ judge.1 }}</option>
+            <option value="{{ judge.0 }}">{{ judge.1 }}</option>
           {% endfor %}
         </select>
       </div>
