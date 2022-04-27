@@ -35,19 +35,19 @@ def problem(request, prob_id):
     return render(request, 'problem.html', context)
 
 
-def run_testcases(sub: Submission, tc):
+def run_testcases(sub: Submission, testcases):
     if sub.judge == Judge.PY2:
-        output = judge_python(sub, tc, False)
+        output = judge_python(sub, testcases, False)
     elif sub.judge == Judge.PY3:
-        output = judge_python(sub, tc, True)
+        output = judge_python(sub, testcases, True)
     elif sub.judge == Judge.GCC:
-        output = judge_gcc(sub, tc)
+        output = judge_gcc(sub, testcases)
     elif sub.judge == Judge.GPP14:
-        output = judge_gpp(sub, tc, 14)
+        output = judge_gpp(sub, testcases, 14)
     elif sub.judge == Judge.GPP17:
-        output = judge_gpp(sub, tc, 17)
+        output = judge_gpp(sub, testcases, 17)
     elif sub.judge == Judge.GPP20:
-        output = judge_gpp(sub, tc, 20)
+        output = judge_gpp(sub, testcases, 20)
 
     sub.verdict = output['verdict']
     sub.time = output['time']

@@ -28,6 +28,6 @@ class TestCase(models.Model):
     output = models.TextField()
 
     def save(self, *args, **kwargs) -> None:
-        self.input = self.input.replace('\r\n', '\n')
-        self.output = self.output.replace('\r\n', '\n')
+        self.input = self.input.replace('\r\n', '\n').strip()
+        self.output = self.output.replace('\r\n', '\n').strip()
         return super().save(*args, **kwargs)
