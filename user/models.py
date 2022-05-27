@@ -16,7 +16,7 @@ class Submission(models.Model):
     )
 
     JUDGE_CHOICES = (
-        (1, Judge.PY2),
+        # (1, Judge.PY2),
         (2, Judge.PY3),
         (3, Judge.GCC),
         (4, Judge.GPP14),
