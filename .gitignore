@@ -9,3 +9,4 @@ venv
 code/in.*
 .vscode
 .key
+session/*.py
