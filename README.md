@@ -4,33 +4,132 @@ Code submission and evaluation plaform using docker for execution and security. 
 
 Currently supports c11, c++14, c++17, c++20, python 2 and python 3, with more to come.
 
-## Getting Started
+## Deploying to production
+Use [this](https://rahmonov.me/posts/run-a-django-app-with-nginx-and-gunicorn/) or follow below
 
-1. Make sure you have [python](https://www.python.org) and [docker](https://docs.docker.com/get-docker/) installed on your machine.
+1. Install necessary software
+    ```bash
+    sudo apt-get update
+    sudo apt-get upgrade
+    sudo apt-get install python3-pip python3.8-venv nginx supervisor
+    ```
 
-1. Setup and start virtual environment. If you don't have `python3`, replace with `python`.
+2. Install docker from [here](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository), or follow steps below
+    ```bash
+    sudo apt-get install apt-transport-https ca-certificates curl gnupg lsb-release
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
+    sudo apt-get update
+    sudo apt-get install docker-ce docker-ce-cli containerd.io
+    sudo reboot
 
-2. Install dependencies and migrate
+    sudo groupadd docker
+    sudo gpasswd -a $USER docker
+    ```
 
-```bash
-pip install -r requirements.txt
-python manage.py migrate
-```
+4. Setup postgres 12
+    ```bash
+    sudo apt-get install libpq-dev python-dev
+    sudo apt-get install postgresql postgresql-contrib
+    
+    sudo su - postgres
+    createdb ccdb
+    createuser -P ccuser
+    ```
+    Create password for ccuser, and keep in mind, will come handy.
 
-3. Run server and open *localhost:8000* in a browser
+    Now, withing the postgres su
+    ```bash
+    psql
+    GRANT ALL PRIVILEGES ON DATABASE ccdb TO ccuser;
+    ```
 
-```bash
-python manage.py runserver
-```
+    Add/replace below in `codecourt/settings.py` appropriately
+    ```py
+    import psycopg2.extensions
+    # ...
+    HOST = os.environ.get('HOST')
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    DB_NAME = os.environ.get('CCDB_NAME')
+    DB_USERNAME = os.environ.get('CCDB_USERNAME')
+    DB_USERPASS = os.environ.get('CCDB_USERPASS')
+    # ...
+    DEBUG = False
+    # ...
+    ALLOWED_HOSTS = [HOST]
+    # ...
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': DB_NAME,
+            'USER': DB_USERNAME,
+            'PASSWORD': DB_USERPASS,
+            'HOST': 'localhost',
+            'PORT': '',
+        },
+        'OPTIONS': {
+            'isolation_level': psycopg2.extensions.ISOLATION_LEVEL_SERIALIZABLE,
+        },
+    }
+    ```
 
-4. To test
-### This will download the images for specific languages which can be in GBs, so this may run long for the first time. Don't forget to delete the docker instance after this test completes.
+4. Add ENV to /etc/supervisor/conf.d/codecourt.d in last line
+    ```
+    environment=HOST='',SECRET_KEY ='',CCDB_NAME='',CCDB_USERNAME='',CCDB_USERPASS='',BASE_URL=''
+    ```
 
-```bash
-python manage.py test
-```
+3. Setup venv, install deps, migrate, collect static, and sync db.
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    python manage.py migrate
+    python manage.py collectstatic
+    python manage.py syncdb
+    ```
+
+4. create /etc/nginx/sites-available/codecourt and write
+    ```
+    server {
+        listen 8000;
+        server_name 0.0.0.0;
+
+        location = /favicon.ico { access_log off; log_not_found off; }
+
+        location /static/ {
+                root /home/ubuntu/codecourt;
+        }
+
+        location / {
+                include proxy_params;
+                proxy_pass http://unix:/home/ubuntu/codecourt/codecourt.sock;
+        }
+    }
+    ```
+
+5. Link and test the above file, then restart nginx
+    ```bash
+    sudo ln -s /etc/nginx/sites-available/codecourt /etc/nginx/sites-enabled
+    sudo nginx -t
+    sudo service nginx restart
+    ```
+
+6. create /etc/supervisor/conf.d/codecourt.conf and write
+    ```
+    [program:codecourt]
+    command=/home/ubuntu/codecourt/venv/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/codecourt/codecourt.sock codecourt.wsgi
+    directory=/home/ubuntu/codecourt
+    autostart=true
+    autorestart=true
+    stderr_logfile=/var/log/codecourt.err.log
+    stdout_logfile=/var/log/codecourt.out.log
+    ```
+
+6. restart, update and get status of project using supervisor
+    ```bash
+    sudo service supervisor restart
+    sudo supervisorctl reread
+    sudo supervisorctl update
+    sudo supervisorctl status myproject
+    ```

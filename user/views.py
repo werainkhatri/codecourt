@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User, auth
 from django.contrib.auth.decorators import login_required
+from codecourt.settings import BASE_URL
 from user.models import Submission
 
 
@@ -35,7 +36,8 @@ def register(request):
                 return redirect('login_n')
 
     else:
-        return render(request, 'register.html', {'title': 'Register - CodeCourt'})
+        context = {'title': 'Register - CodeCourt', 'BASE_URL': BASE_URL}
+        return render(request, 'register.html', context)
 
 
 def login(request):
@@ -53,7 +55,8 @@ def login(request):
             messages.info(request, 'invalid credentials')
             return redirect('login_n')
     else:
-        return render(request, 'login.html', {'title': 'Login - CodeCourt'})
+        context = {'title': 'Login - CodeCourt', 'BASE_URL': BASE_URL}
+        return render(request, 'login.html', context)
 
 
 def logout(request):
@@ -69,6 +72,7 @@ def submissions(request):
     submissions = Submission.objects.filter(user=request.user).order_by('-id')
     context = {
         'title': 'Submissions - CodeCourt',
+        'BASE_URL': BASE_URL,
         'submissions': submissions,
     }
 
