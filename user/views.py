@@ -65,5 +65,10 @@ def submissions(request):
     if request.method == 'POST':
         pass
 
-    submissions = Submission.objects.all()
-    return render(request, 'submissions.html', {'title': 'Submissions - CodeCourt', 'submissions': submissions[:100]})
+    submissions = Submission.objects.filter(user=request.user).order_by('-id')
+    context = {
+        'title': 'Submissions - CodeCourt',
+        'submissions': submissions,
+    }
+
+    return render(request, 'submissions.html', context)
