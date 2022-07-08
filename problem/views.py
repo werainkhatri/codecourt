@@ -21,16 +21,27 @@ def problem(request, prob_id):
                                 code=request.POST['code'],
                                 judge=request.POST['language'])
         testcases = list(submission.problem.testcase_set.all())
-        print(submission.judge)
         submission.save()
-        p = Process(target=run_testcases, args=(submission,testcases,))
+        p = Process(target=run_testcases, args=(submission, testcases,))
         p.start()
         return redirect('submissions')
+
+    submission_id = request.GET.get('submission_id', None)
+    code = ''
+    judge = ''
+
+    if submission_id:
+        submission = Submission.objects.get(id=submission_id)
+        if (submission.user == request.user):
+            code = submission.code
+            judge = submission.judge
 
     context = {
         'problem': problem,
         'samples': TestCase.objects.filter(problem_id=problem.id, is_sample=True),
         'judges': Submission.JUDGE_CHOICES,
+        'precode': code,
+        'prejudge': judge,
     }
     return render(request, 'problem.html', context)
 

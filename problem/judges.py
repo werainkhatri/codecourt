@@ -1,6 +1,4 @@
-import os
 import subprocess as sp
-import tarfile
 from time import time
 
 import docker
@@ -10,6 +8,7 @@ from user.models import Submission
 from . import constants as _
 
 __client = docker.from_env()
+
 
 def judge_gcc(submission: Submission, testcases):
     '''
@@ -73,7 +72,7 @@ def __chief_judge(submission, testcases, ext, clear, run, cont_name, docker_imag
     file = open(_.HOST_PATH + hostfile, 'w+')
     file.write(submission.code)
     file.close()
-    
+
     container: docker.models.containers.Container = None
     try:
         container: Container = __client.containers.get(cont_name)
@@ -81,11 +80,11 @@ def __chief_judge(submission, testcases, ext, clear, run, cont_name, docker_imag
             container.start()
     except docker.errors.NotFound:
         container = __client.containers.run(docker_image,
-            stdin_open=True, 
-            detach=True, 
-            tty=True,
-            name=cont_name)
-    
+                                            stdin_open=True,
+                                            detach=True,
+                                            tty=True,
+                                            name=cont_name)
+
     __copy_to_container(hostfile, filename, container)
 
     maxtime = 0.0
@@ -97,29 +96,27 @@ def __chief_judge(submission, testcases, ext, clear, run, cont_name, docker_imag
         return {'verdict': verdict, 'time': maxtime}
 
     if compile:
-        cp = sp.run('docker exec ' +  cont_name + ' ' + compile, shell=True)
+        cp = sp.run('docker exec ' + cont_name + ' ' + compile, shell=True)
         if cp.returncode != 0:
             verdict = 'CE'
             return close()
 
-    
     for tc in testcases:
         start = time()
 
         try:
             cp = sp.run('docker exec ' + cont_name + ' sh -c \'echo "{}" | {}\''.format(tc.input, run),
-                    shell=True,
-                    capture_output=True,
-                    timeout=submission.problem.time_limit / 1000)
+                        shell=True,
+                        capture_output=True,
+                        timeout=submission.problem.time_limit / 1000)
         except sp.TimeoutExpired:
             maxtime = (time() - start) * 1000
             verdict = 'TE'
             break
-        
+
         maxtime = max(maxtime, (time() - start) * 1000)
 
         if cp.returncode != 0:
-            print(cp.stderr.decode())
             verdict = 'RE'
             break
 
@@ -127,8 +124,9 @@ def __chief_judge(submission, testcases, ext, clear, run, cont_name, docker_imag
         if not useroutput == tc.output:
             verdict = 'WA'
             break
-    
+
     return close()
+
 
 def __copy_to_container(src, dst, container):
     src = _.HOST_PATH + src

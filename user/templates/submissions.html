@@ -15,6 +15,7 @@
       <th>judge</th>
       <th>verdict</th>
       <th>time</th>
+      <th>edit</th>
     </tr>
 
     {% for sub in submissions %}
@@ -50,6 +51,11 @@
           {% endif %}
         </td>
         <td>{{ sub.time }} ms</td>
+        <td>
+          <a href="{% url 'problem' sub.problem.id %}?submission_id={{ sub.id }}">
+            <i class='far fa-edit' style='font-size:20px;color:blue'></i>
+          </a>
+        </td>
       </tr>
 
     {% endfor %}

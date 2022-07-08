@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from problem.constants import Judge
+from problem.constants import MAX_CODE_LENGTH, Judge
 from problem.models import Problem
 
 
@@ -28,7 +28,7 @@ class Submission(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
-    code = models.TextField()
+    code = models.TextField(max_length=MAX_CODE_LENGTH)
     datetime = models.DateTimeField(auto_now_add=True)
     judge = models.CharField(max_length=30, choices=JUDGE_CHOICES)
     verdict = models.CharField(
