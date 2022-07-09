@@ -79,14 +79,9 @@ Use [this](https://rahmonov.me/posts/run-a-django-app-with-nginx-and-gunicorn/) 
     environment=HOST='',SECRET_KEY ='',CCDB_NAME='',CCDB_USERNAME='',CCDB_USERPASS='',BASE_URL=''
     ```
 
-3. Setup venv, install deps, migrate, collect static, and sync db.
+3. Setup venv.
     ```bash
     python3 -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-    python manage.py migrate
-    python manage.py collectstatic
-    python manage.py syncdb
     ```
 
 4. create /etc/nginx/sites-available/codecourt and write
@@ -118,12 +113,13 @@ Use [this](https://rahmonov.me/posts/run-a-django-app-with-nginx-and-gunicorn/) 
 6. create /etc/supervisor/conf.d/codecourt.conf and write
     ```
     [program:codecourt]
-    command=/home/ubuntu/codecourt/venv/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/codecourt/codecourt.sock codecourt.wsgi
+    command=/bin/sh start.sh
     directory=/home/ubuntu/codecourt
     autostart=true
     autorestart=true
     stderr_logfile=/var/log/codecourt.err.log
     stdout_logfile=/var/log/codecourt.out.log
+    environment=HOST='',SECRET_KEY ='',CCDB_NAME='',CCDB_USERNAME='',CCDB_USERPASS='',BASE_URL=''
     ```
 
 6. restart, update and get status of project using supervisor
