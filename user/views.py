@@ -12,8 +12,13 @@ def register(request):
         password1 = request.POST['password1']
         password2 = request.POST['password2']
 
-        if password1 == password2:
-
+        if username == '' or email == '' or password1 == '' or password2 == '':
+            messages.info(request, 'All fields are required')
+            return redirect('register_n')
+        elif password1 != password2:
+            messages.info(request, 'Passwords don\'t matching')
+            return redirect('register_n')
+        else:
             if User.objects.filter(username=username).exists():
                 messages.info(request, 'Username already taken')
                 return redirect('register_n')
@@ -28,10 +33,6 @@ def register(request):
                 user.save()
                 messages.success(request, f'Account Created for {username}!')
                 return redirect('login_n')
-
-        else:
-            messages.info(request, 'passwords don\'t matching')
-            return redirect('register_n')
 
     else:
         return render(request, 'register.html', {'title': 'Register - CodeCourt'})
