@@ -29,7 +29,7 @@ DB_USERPASS = os.environ.get('CCDB_USERPASS')
 HOST = os.environ.get('HOST')
 BASE_URL = os.environ.get('BASE_URL')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [HOST]
 
